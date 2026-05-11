@@ -7,7 +7,7 @@ public class ClanApplicantsWebhookTest
 {
 	public static void main(String[] args) throws Exception
 	{
-		ExternalPluginManager.loadBuiltin(ClanApplicantsWebhook.class);
-		RuneLite.main(args);
+		ExternalPluginManager.loadBuiltin(ClanApplicantsWebhookPlugin.class);
+		RuneLite.main(new String[]{"--developer-mode", "--disable-telemetry"});
 	}
 }

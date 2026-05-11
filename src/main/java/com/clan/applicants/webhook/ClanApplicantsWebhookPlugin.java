@@ -1,4 +1,5 @@
 package com.clan.applicants.webhook;
+
 import com.google.gson.Gson;
 import com.google.inject.Provides;
 import java.io.IOException;
@@ -10,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.events.ChatMessage;
+import net.runelite.client.chat.ChatMessageManager;
+import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
@@ -27,7 +30,7 @@ import okhttp3.Response;
 	name = "Clan Application Webhook",
 	description = "Sends clan application game messages to a webhook URL"
 )
-public class ClanApplicationPlugin extends Plugin
+public class ClanApplicantsWebhookPlugin extends Plugin
 {
 	private static final Pattern APPLICATION_PATTERN =
 		Pattern.compile("^(.+?) has applied to join your clan\\.$");
@@ -44,12 +47,15 @@ public class ClanApplicationPlugin extends Plugin
 	private OkHttpClient okHttpClient;
 
 	@Inject
-	private ClanApplicationConfig config;
+	private ChatMessageManager chatMessageManager;
+
+	@Inject
+	private ClanApplicantsWebhookConfig config;
 
 	@Provides
-	ClanApplicationConfig provideConfig(ConfigManager configManager)
+	ClanApplicantsWebhookConfig provideConfig(ConfigManager configManager)
 	{
-		return configManager.getConfig(ClanApplicationConfig.class);
+		return configManager.getConfig(ClanApplicantsWebhookConfig.class);
 	}
 
 	@Subscribe
@@ -80,10 +86,11 @@ public class ClanApplicationPlugin extends Plugin
 		if (webhookUrl == null || webhookUrl.trim().isEmpty())
 		{
 			log.warn("Clan application webhook URL is not configured");
+			postFailureMessage("Webhook URL not configured");
 			return;
 		}
 
-		ClanApplicationPayload payload = new ClanApplicationPayload(
+		ClanApplicantsWebhookPayload payload = new ClanApplicantsWebhookPayload(
 			applicant,
 			message,
 			client.getUsername(),
@@ -108,6 +115,8 @@ public class ClanApplicationPlugin extends Plugin
 			public void onFailure(Call call, IOException e)
 			{
 				log.warn("Failed to send clan application webhook", e);
+
+				postFailureMessage(e.getClass().getSimpleName());
 			}
 
 			@Override
@@ -117,10 +126,39 @@ public class ClanApplicationPlugin extends Plugin
 				{
 					if (!response.isSuccessful())
 					{
-						log.warn("Clan application webhook returned HTTP {}", response.code());
+						String responseBody = response.body() != null
+							? response.body().string()
+							: "No body";
+
+						log.warn(
+							"Clan application webhook failed. HTTP {} Body: {}",
+							response.code(),
+							responseBody
+						);
+
+						postFailureMessage("HTTP " + response.code());
 					}
+				}
+				catch (Exception e)
+				{
+					log.warn("Failed reading clan application webhook response", e);
+
+					postFailureMessage("Invalid response");
 				}
 			}
 		});
+	}
+
+	private void postFailureMessage(String error)
+	{
+		chatMessageManager.queue(
+			QueuedMessage.builder()
+				.type(ChatMessageType.GAMEMESSAGE)
+				.runeLiteFormattedMessage(
+					"<col=ff0000>Post to Clan Applications Webhook failure:</col> "
+						+ error
+				)
+				.build()
+		);
 	}
 }

@@ -1,13 +1,13 @@
-package com.example;
+package com.clan.applicants.webhook;
 
 import net.runelite.client.RuneLite;
 import net.runelite.client.externalplugins.ExternalPluginManager;
 
-public class ExamplePluginTest
+public class ClanApplicantsWebhookTest
 {
 	public static void main(String[] args) throws Exception
 	{
-		ExternalPluginManager.loadBuiltin(ExamplePlugin.class);
+		ExternalPluginManager.loadBuiltin(ClanApplicantsWebhook.class);
 		RuneLite.main(args);
 	}
 }

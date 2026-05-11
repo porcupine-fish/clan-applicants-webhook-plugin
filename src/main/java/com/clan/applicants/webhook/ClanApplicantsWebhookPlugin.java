@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
+import net.runelite.api.Player;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
@@ -93,7 +94,7 @@ public class ClanApplicantsWebhookPlugin extends Plugin
 		ClanApplicantsWebhookPayload payload = new ClanApplicantsWebhookPayload(
 			applicant,
 			message,
-			client.getUsername(),
+			getSeenBy(),
 			Instant.now().toString()
 		);
 
@@ -115,7 +116,6 @@ public class ClanApplicantsWebhookPlugin extends Plugin
 			public void onFailure(Call call, IOException e)
 			{
 				log.warn("Failed to send clan application webhook", e);
-
 				postFailureMessage(e.getClass().getSimpleName());
 			}
 
@@ -142,11 +142,27 @@ public class ClanApplicantsWebhookPlugin extends Plugin
 				catch (Exception e)
 				{
 					log.warn("Failed reading clan application webhook response", e);
-
 					postFailureMessage("Invalid response");
 				}
 			}
 		});
+	}
+
+	private String getSeenBy()
+	{
+		Player localPlayer = client.getLocalPlayer();
+
+		if (localPlayer != null && localPlayer.getName() != null && !localPlayer.getName().trim().isEmpty())
+		{
+			return localPlayer.getName().trim();
+		}
+
+		if (client.getUsername() != null && !client.getUsername().trim().isEmpty())
+		{
+			return client.getUsername().trim();
+		}
+
+		return "Unknown";
 	}
 
 	private void postFailureMessage(String error)

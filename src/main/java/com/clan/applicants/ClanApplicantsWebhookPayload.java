@@ -1,12 +1,22 @@
 package com.clan.applicants.webhook;
 
-import lombok.Value;
-
-@Value
 public class ClanApplicantsWebhookPayload
 {
-	String applicant;
-	String message;
-	String seenBy;
-	String timestamp;
+	public final String applicant;
+	public final String message;
+	public final String seenBy;
+	public final String timestamp;
+
+	public ClanApplicantsWebhookPayload(
+		String applicant,
+		String message,
+		String seenBy,
+		String timestamp
+	)
+	{
+		this.applicant = applicant;
+		this.message = message;
+		this.seenBy = seenBy;
+		this.timestamp = timestamp;
+	}
 }

@@ -28,8 +28,8 @@ import okhttp3.Response;
 
 @Slf4j
 @PluginDescriptor(
-	name = "Clan Application Webhook",
-	description = "Sends clan application game messages to a webhook URL"
+	name = "Clan Applicants Webhook",
+	description = "Sends clan applicant game messages to a webhook URL"
 )
 public class ClanApplicantsWebhookPlugin extends Plugin
 {

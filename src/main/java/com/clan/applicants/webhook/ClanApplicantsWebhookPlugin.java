@@ -39,8 +39,6 @@ public class ClanApplicantsWebhookPlugin extends Plugin
 	private static final MediaType JSON =
 		MediaType.parse("application/json; charset=utf-8");
 
-	private final Gson gson = new Gson();
-
 	@Inject
 	private Client client;
 
@@ -49,6 +47,9 @@ public class ClanApplicantsWebhookPlugin extends Plugin
 
 	@Inject
 	private ChatMessageManager chatMessageManager;
+
+	@Inject
+	private Gson gson;
 
 	@Inject
 	private ClanApplicantsWebhookConfig config;
@@ -91,10 +92,12 @@ public class ClanApplicantsWebhookPlugin extends Plugin
 			return;
 		}
 
+		String seenBy = getSeenBy();
+
 		ClanApplicantsWebhookPayload payload = new ClanApplicantsWebhookPayload(
 			applicant,
 			message,
-			getSeenBy(),
+			seenBy,
 			Instant.now().toString()
 		);
 
